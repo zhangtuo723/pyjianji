@@ -16,7 +16,9 @@ from tkinter import filedialog
 
 import pyJianYingDraft as draft
 from pyJianYingDraft import Font_type, Text_style, Clip_settings
-from pyJianYingDraft.text_segment import Text_border
+# from pyJianYingDraft.text_segment import Text_border
+
+from pyJianYingDraft import FontType, TextStyle, ClipSettings,Text_border
 
 
 
@@ -51,12 +53,16 @@ srt_file = get_file_path('srt')
 
 
 # config_path = './config.json'
-
+# 设置草稿文件夹
+draft_folder = draft.DraftFolder(r"E:\jianying\draft\JianyingPro Drafts")
 # 创建剪映草稿
-script = draft.Script_file(2048, 2048*0.75) 
+# script = draft.Script_file(2048, 1152) 
+# 创建剪映草稿
+project_name = input("请输入项目名称：")
+script = draft_folder.create_draft(project_name, 2048, 2048*0.75, allow_replace=True)  # 1920x1080分辨率
 
 # 添加音频、视频和文本轨道
-script.add_track(draft.Track_type.audio).add_track(draft.Track_type.video).add_track(draft.Track_type.text)
+script.add_track(draft.Track_type.audio).add_track(draft.Track_type.video,'图片').add_track(draft.Track_type.video,'视频').add_track(draft.Track_type.text)
 
 
 
@@ -76,43 +82,68 @@ total_duration = 0
 for idx,item in enumerate(data):
     print(idx,item)
     video_material = draft.Video_material(item['filePath'])
+    
+
+
+
     script.add_material(video_material)
+
 
     # 计算时常
     curren_duration = sum(k['duration'] for k in item['textList'])/1000
     right = left + curren_duration
 
-  
+    if item['videoPath']:   
+
+        video_material2 = draft.Video_material(item['videoPath'])
+        
+        
+        speed = 1
+        # 如果素材时间小于current_duration speed
+        # if video_material2.duration/1000000 < curren_duration:
+        speed = (video_material2.duration/1000000)/curren_duration
+
+        # if video_material2.duration/1000000 > curren_duration:
+        #     speed = (video_material2.duration/1000000)/curren_duration
+
+
+
+            
+
+
+        script.add_material(video_material2)
+        video_segment2 = draft.Video_segment(video_material2, trange(f"{left}s", f"{curren_duration}s"),speed=speed) 
+       
+        script.add_segment(video_segment2,'图片')
+        left = right
+        continue
+        
     video_segment = draft.Video_segment(video_material, trange(f"{left}s", f"{curren_duration}s")) 
     left = right
-
-
-    
-
     if idx % 6 == 0:
-        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1.33)
-        length = 0.25
+        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1.1)
+        length = 0.1
         if curren_duration >= 5:
-            length = 0.25
+            length = 0.1
         else:
-            length = 0.25 * (curren_duration/5)
+            length = 0.1 * (curren_duration/5)
         video_segment.add_keyframe(Keyframe_property.position_y,0,-length)
 
         video_segment.add_keyframe(Keyframe_property.position_y,int(video_segment.duration) ,length)
 
     if idx % 6 == 1:
-        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1.33)
-        length = 0.25
+        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1.1)
+        length = 0.1
         if curren_duration >= 5:
-            length = 0.25
+            length = 0.1
         else:
-            length = 0.25 * (curren_duration/5)
+            length = 0.1 * (curren_duration/5)
         video_segment.add_keyframe(Keyframe_property.position_y,0,length)
 
         video_segment.add_keyframe(Keyframe_property.position_y,int(video_segment.duration) ,-length)
     
     if idx % 6 == 2:
-        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1.43)
+        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1.2)
         length = 0.08
         if curren_duration >= 5:
             length = 0.08
@@ -123,7 +154,7 @@ for idx,item in enumerate(data):
         video_segment.add_keyframe(Keyframe_property.position_x,int(video_segment.duration) ,-length)
 
     if idx % 6 == 3:
-        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1.43)
+        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1.2)
         length = 0.08
         if curren_duration >= 5:
             length = 0.08
@@ -134,29 +165,33 @@ for idx,item in enumerate(data):
         video_segment.add_keyframe(Keyframe_property.position_x,int(video_segment.duration) ,length)
     
 
-    if idx % 6 == 5:
-        
-        scale = 1.53
-        if curren_duration >= 5:
-            scale = 1.53
-        else:
-            scale = 0.2 * (curren_duration/5) + 1.33
-        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,scale)
-        video_segment.add_keyframe(Keyframe_property.uniform_scale,int(video_segment.duration),1.33)
     if idx % 6 == 4:
-        
-        scale = 1.53
+        scale = 1.1
         if curren_duration >= 5:
-            scale = 1.53
+            scale = 1.1
         else:
-            scale = 0.2 * (curren_duration/5) + 1.33
-        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1.33)
+            scale = 0.1 * (curren_duration/5) + 1
+        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,1)
         video_segment.add_keyframe(Keyframe_property.uniform_scale,int(video_segment.duration),scale)
+        
+        
+    if idx % 6 == 5:
+        scale = 1.1
+        if curren_duration >= 5:
+            scale = 1.1
+        else:
+            scale = 0.1 * (curren_duration/5) + 1
+        video_segment.add_keyframe(Keyframe_property.uniform_scale,0,scale)
+        video_segment.add_keyframe(Keyframe_property.uniform_scale,int(video_segment.duration),1)
+        
+        
 
 
 
     # 将片段1添加到轨道中
-    script.add_segment(video_segment)
+    script.add_segment(video_segment,'图片')
+
+
 
 # 添加音频
 
@@ -180,4 +215,5 @@ script.import_srt(srt_file,
 )
 
 
-script.dump("E:/jianying/draft/JianyingPro Drafts/7月12日/draft_content.json")
+# script.dump("E:/jianying/draft/JianyingPro Drafts/9月21日/draft_content.json")
+script.save()
